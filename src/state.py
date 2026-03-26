@@ -2,6 +2,7 @@ from typing import TypedDict
 
 class AgentState(TypedDict):
     code: str # code to generate tests for
+    file_path: str  # file path of the code
     tests: str # generated tests file for the current function
 
     status: str # status of last test file
