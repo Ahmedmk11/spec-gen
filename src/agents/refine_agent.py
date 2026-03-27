@@ -14,7 +14,7 @@ class RefineAgent:
 
         self.llm = LLMClient(tools=self.tools)
         self.graph = self._build_graph()
-        self.previous_attempts = [] # check on this later
+        self.previous_attempts = [] # TODO: check on this later
 
         self.system_prompt = textwrap.dedent("""
         Placeholder

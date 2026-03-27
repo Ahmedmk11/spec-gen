@@ -81,14 +81,6 @@ async def test(req: AnalyzeTest):
     except Exception as e:
         return {"error": str(e)}
 
-@app.post("/")
-async def generate_spec():
-    try:
-        # TODO: implement actual logic using agents
-        pass
-    except Exception as e:
-        return {"error": str(e)}
-
 @app.get("/")
 async def health():
     return {"status": "ok"}
