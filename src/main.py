@@ -27,12 +27,17 @@ app.add_middleware(
     allow_credentials=True,
 )
 
-class TestRequest(BaseModel):
+class GenerateTest(BaseModel):
     code: str
     file_path: str
 
-@app.post("/test")
-async def test(req: TestRequest):
+class AnalyzeTest(BaseModel):
+    code: str
+    tests: str
+    file_path: str
+
+@app.post("/test-generate")
+async def test(req: GenerateTest):
     try:
         agent = GenerateAgent()
 
@@ -45,10 +50,33 @@ async def test(req: TestRequest):
             "decision": "",
             "reason": "",
             "previous_attempts": [],
-            "retries": 0,
         })
 
         return {"tests": response["tests"]}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/test-analyze")
+async def test(req: AnalyzeTest):
+    try:
+        agent = AnalyzeAgent()
+
+        response = await agent.ainvoke({
+            "code": req.code,
+            "file_path": req.file_path,
+            "tests": req.tests,
+            "status": "",
+            "output": "",
+            "decision": "",
+            "reason": "",
+            "previous_attempts": [],
+        })
+
+        return {
+            "decision": response["decision"],
+            "reason": response["reason"]
+        }
 
     except Exception as e:
         return {"error": str(e)}

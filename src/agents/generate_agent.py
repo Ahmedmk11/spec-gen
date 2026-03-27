@@ -17,7 +17,6 @@ class GenerateAgent:
         self.tools = [*self.local_tools, *self.mcp_tools]
 
         self.llm = LLMClient(tools=self.tools)
-        self.graph = self._build_graph()
 
         self.system_prompt = textwrap.dedent("""
         You generate pytest unit tests for Python code provided by the user.
@@ -30,9 +29,12 @@ class GenerateAgent:
         - Cover happy paths, edge cases, and invalid inputs where applicable.
         - Each test function must have a descriptive name starting with test_.
         - Output ONLY raw Python code. Do NOT wrap in markdown code blocks or backticks of any kind.
+        - If you encounter an error in your generated code, fix it and return only the corrected code without any explanations.
         """).strip()
+        
+        self.graph = self._build_graph()
 
-    def _node(self, state):
+    async def _node(self, state):
         code = state.get("code", "")
         file_path = state.get("file_path", "")
 
@@ -46,24 +48,32 @@ class GenerateAgent:
             {"role": "user", "content": f"Module: {module}\n\nGenerate tests for this code:\n\n{code}"}
         ]
 
-        response = self.llm.llm.invoke(messages)
+        last_error = None
 
-        generated_tests = response.content if hasattr(response, "content") else str(response)
+        for attempt in range(3):
+            response = await self.llm.llm.ainvoke(messages)
+            generated_tests = response.content if hasattr(response, "content") else str(response)
 
-        if generated_tests.startswith("```"):
-            generated_tests = re.sub(r"^```[a-z]*\n?", "", generated_tests)
-            generated_tests = re.sub(r"\n?```$", "", generated_tests)
-            generated_tests = generated_tests.strip()
+            if generated_tests.startswith("```"):
+                generated_tests = re.sub(r"^```[a-z]*\n?", "", generated_tests)
+                generated_tests = re.sub(r"\n?```$", "", generated_tests)
+                generated_tests = generated_tests.strip()
 
-        try:
-            ast.parse(generated_tests)
-        except SyntaxError as e:
-            raise ValueError(f"Generated code has syntax error: {e}") # TODO: maybe send it to analysis agent as well?
+            try:
+                ast.parse(generated_tests)
+                return {"tests": generated_tests}
+            except SyntaxError as e:
+                last_error = e
+                print(f"Attempt {attempt + 1} failed with syntax error: {e}")
+                messages = [
+                    *messages,
+                    {"role": "assistant", "content": generated_tests},
+                    {"role": "user", "content": f"The code you generated has a syntax error: {e}\n\nFix it and return only valid Python code."}
+                ]
+                continue
 
-        return {
-            "tests": generated_tests,
-        }
-    
+        raise ValueError(f"Failed to generate valid Python after 3 attempts: {last_error}")
+
     def _build_graph(self):
         workflow = StateGraph(AgentState)
         workflow.add_node("generate", self._node)

@@ -15,3 +15,11 @@ class LLMClient:
                 "cache_control": {"type": "ephemeral"}
             },
         ).bind_tools(tools if tools else [])
+
+    def with_structured_output(self, schema):
+        return init_chat_model(
+            model=get_env_model(),
+            model_kwargs={
+                "cache_control": {"type": "ephemeral"}
+            },
+        ).with_structured_output(schema)
