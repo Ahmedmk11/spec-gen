@@ -101,5 +101,4 @@ class AnalyzeAgent:
         }
 
         result = await self.graph.ainvoke(state, config)
-        print(result)
         return result

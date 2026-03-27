@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -7,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.agents.generate_agent import GenerateAgent
 from src.agents.analyze_agent import AnalyzeAgent
 from src.agents.refine_agent import RefineAgent
+
+from src.graph import Graph
 
 load_dotenv()
 
@@ -27,6 +31,11 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+agent = Graph()
+generateAgent = GenerateAgent()
+analyzeAgent = AnalyzeAgent()
+refineAgent = RefineAgent()
+
 class GenerateTest(BaseModel):
     code: str
     file_path: str
@@ -36,12 +45,18 @@ class AnalyzeTest(BaseModel):
     tests: str
     file_path: str
 
-@app.post("/test-generate")
-async def test(req: GenerateTest):
-    try:
-        agent = GenerateAgent()
+class RefineTest(BaseModel):
+    pass
 
-        response = await agent.ainvoke({
+class Generate(BaseModel):
+    code: str
+    file_path: str
+    spec_path: str
+
+@app.post("/test-generate")
+async def test_generate(req: GenerateTest):
+    try:
+        response = await generateAgent.ainvoke({
             "code": req.code,
             "file_path": req.file_path,
             "tests": "",
@@ -58,11 +73,9 @@ async def test(req: GenerateTest):
         return {"error": str(e)}
 
 @app.post("/test-analyze")
-async def test(req: AnalyzeTest):
+async def test_analyze(req: AnalyzeTest):
     try:
-        agent = AnalyzeAgent()
-
-        response = await agent.ainvoke({
+        response = await analyzeAgent.ainvoke({
             "code": req.code,
             "file_path": req.file_path,
             "tests": req.tests,
@@ -77,6 +90,57 @@ async def test(req: AnalyzeTest):
             "decision": response["decision"],
             "reason": response["reason"]
         }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/test-refine")
+async def test_refine(req: RefineTest):
+    try:
+        response = await refineAgent.ainvoke({
+            "code": "",
+            "file_path": "",
+            "tests": "",
+            "status": "",
+            "output": "",
+            "decision": "",
+            "reason": "",
+            "previous_attempts": [],
+        })
+
+        return {
+            "decision": response["decision"],
+            "reason": response["reason"]
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/")
+async def generate_spec(req: Generate):
+    try:
+        response = await agent.ainvoke({
+            "code": req.code,
+            "file_path": req.file_path,
+            "tests": "",
+            "status": "",
+            "output": "",
+            "decision": "",
+            "reason": "",
+            "previous_attempts": [],
+        })
+
+        tests = response["tests"]
+
+        os.makedirs(os.path.dirname(req.spec_path), exist_ok=True)
+
+        mode = "a" if os.path.exists(req.spec_path) else "w"
+        with open(req.spec_path, mode) as f:
+            if mode == "a":
+                f.write("\n\n")
+            f.write(tests)
+
+        return {"tests": tests}
 
     except Exception as e:
         return {"error": str(e)}
