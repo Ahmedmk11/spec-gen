@@ -27,7 +27,7 @@ class AnalyzeAgent:
         self.tools = [*self.local_tools, *self.mcp_tools]
 
         self.tool_llm = LLMClient(tools=self.tools)
-        self.analysis_llm = LLMClient().with_structured_output(AnalysisResult)
+        self.analysis_llm = LLMClient(schema=AnalysisResult)
 
         self.run_system_prompt = textwrap.dedent("""
         You are a test runner. You will be given a test file and your only job is to run it using the run_code tool.
@@ -68,7 +68,7 @@ class AnalyzeAgent:
             {"role": "user", "content": f"Run the following test file:\n\n{tests}"}
         ]
 
-        await self.tool_llm.llm.ainvoke(messages)
+        await self.tool_llm.ainvoke(messages)
 
     async def _analyze_node(self, state):
         code = state.get("code", "")

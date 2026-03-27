@@ -8,18 +8,16 @@ def get_env_model():
     return model
 
 class LLMClient:
-    def __init__(self, tools: list | None = None) -> None:
-        self.llm = init_chat_model(
+    def __init__(self, tools: list | None = None, schema=None) -> None:
+        base = init_chat_model(
             model=get_env_model(),
-            model_kwargs={
-                "cache_control": {"type": "ephemeral"}
-            },
-        ).bind_tools(tools if tools else [])
+            model_kwargs={"cache_control": {"type": "ephemeral"}},
+        )
 
-    def with_structured_output(self, schema):
-        return init_chat_model(
-            model=get_env_model(),
-            model_kwargs={
-                "cache_control": {"type": "ephemeral"}
-            },
-        ).with_structured_output(schema)
+        if schema:
+            self.llm = base.with_structured_output(schema)
+        else:
+            self.llm = base.bind_tools(tools if tools else [])
+
+    async def ainvoke(self, messages):
+        return await self.llm.ainvoke(messages)

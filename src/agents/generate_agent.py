@@ -51,7 +51,7 @@ class GenerateAgent:
         last_error = None
 
         for attempt in range(3):
-            response = await self.llm.llm.ainvoke(messages)
+            response = await self.llm.ainvoke(messages)
             generated_tests = response.content if hasattr(response, "content") else str(response)
 
             if generated_tests.startswith("```"):
