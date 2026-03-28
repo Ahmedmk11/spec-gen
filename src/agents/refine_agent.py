@@ -28,6 +28,7 @@ class RefineAgent:
         - Use pytest. Do not use unittest unless specifically required.
         - Fix ONLY the issues described in the feedback. Do not remove tests that are already correct.
         - Output ONLY raw Python code. Do NOT wrap in markdown code blocks or backticks of any kind.
+        - Each test function must have a descriptive name starting with test_.
         """).strip()
 
         self.graph = self._build_graph()
