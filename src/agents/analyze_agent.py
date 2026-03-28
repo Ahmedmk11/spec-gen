@@ -39,11 +39,15 @@ class AnalyzeAgent:
         - The tests correctly target the actual behavior of the code
         - The tests cover the main functionality, edge cases, and failure scenarios adequately
         - The tests are meaningful and assert actual behavior, not just that code runs without error
+        - The tests are overall correct even if minor improvements could theoretically be made
 
         Decide to REFINE if:
         - The tests have incorrect assertions, wrong imports, or broken setup that make them invalid
-        - The tests are missing critical cases given the complexity of the code
+        - The tests are missing critical and obvious cases given the complexity of the code
         - The tests are shallow, redundant, or not asserting anything meaningful
+        - ANY test uses assertions like `is not None` or any assertion that passes regardless of what the function returns
+
+        When in doubt, ACCEPT. Only REFINE if there is a clear, concrete problem that makes the tests wrong or meaningless. Minor theoretical edge cases or implementation details that do not affect correctness should never trigger a REFINE.
 
         Always provide a reason explaining your decision. If refining, be specific about what is wrong and what needs to be fixed so the refine agent can act on it.
         """).strip()

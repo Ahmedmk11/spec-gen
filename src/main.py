@@ -117,6 +117,7 @@ async def generate_spec(req: Generate):
             "decision": "",
             "reason": "",
             "previous_attempts": [],
+            "iteration": 0,
         })
 
         return {"tests": response["tests"]}

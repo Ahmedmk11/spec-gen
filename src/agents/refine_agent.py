@@ -89,6 +89,7 @@ class RefineAgent:
                 ast.parse(generated_tests)
                 return {
                     "tests": generated_tests,
+                    "iteration": state.get("iteration", 0) + 1,
                     "previous_attempts": previous_attempts + [{"tests": tests, "reason": reason}]
                 }
             except SyntaxError as e:

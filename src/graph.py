@@ -25,6 +25,8 @@ class Graph:
     def _route(self, state):
         if state.get("decision") == "accept":
             return END
+        if state.get("iteration", 0) >= 3:
+            return END
         return "refiner"
 
     def _build_graph(self):

@@ -10,3 +10,5 @@ class AgentState(TypedDict):
     reason: str # reason of last decision
 
     previous_attempts: list[dict] # previous attempts of creating the current test file, empty if first attempt
+
+    iteration: int
