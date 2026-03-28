@@ -7,7 +7,6 @@ from langgraph.graph import StateGraph, START, END
 
 from src.llm_client import LLMClient
 from src.state import AgentState
-from src.utils.run_code import run_code
 
 class AnalysisResult(BaseModel):
     decision: str = Field(description="Either 'accept' or 'refine'")
@@ -35,7 +34,6 @@ class AnalyzeAgent:
         You are given:
         - The original code
         - A generated test file meant to test that code
-        - The output from running the test file
 
         Decide to ACCEPT if:
         - The tests correctly target the actual behavior of the code
@@ -52,28 +50,14 @@ class AnalyzeAgent:
 
         self.graph = self._build_graph()
 
-    async def _run_node(self, state):
-        tests = state.get("tests", "")
-
-        if not tests:
-            raise ValueError("Missing required state: tests are required")
-
-        result = run_code(tests)
-
-        return {
-            "status": result["status"],
-            "output": result["output"],
-        }
-
     async def _analyze_node(self, state):
         code = state.get("code", "")
         tests = state.get("tests", "")
-        output = state.get("output", "")
         file_path = state.get("file_path", "")
 
         messages = [
             {"role": "system", "content": self.analysis_system_prompt},
-            {"role": "user", "content": f"Here is the original code's file path: {file_path} \n\nHere is the source code:\n\n{code}\n\nHere is the generated test file:\n\n{tests}\n\nHere is the output from running the tests:\n\n{output}"}
+            {"role": "user", "content": f"Here is the original code's file path: {file_path} \n\nHere is the source code:\n\n{code}\n\nHere is the generated test file:\n\n{tests}"}
         ]
 
         result = await self.llm.ainvoke(messages)
@@ -85,11 +69,9 @@ class AnalyzeAgent:
 
     def _build_graph(self):
         workflow = StateGraph(AgentState)
-        workflow.add_node("run", self._run_node)
         workflow.add_node("analyze", self._analyze_node)
 
-        workflow.add_edge(START, "run")
-        workflow.add_edge("run", "analyze")
+        workflow.add_edge(START, "analyze")
         workflow.add_edge("analyze", END)
 
         return workflow.compile()

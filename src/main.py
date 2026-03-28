@@ -1,5 +1,3 @@
-import os
-
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -51,7 +49,6 @@ class RefineTest(BaseModel):
 class Generate(BaseModel):
     code: str
     file_path: str
-    spec_path: str
 
 @app.post("/test-generate")
 async def test_generate(req: GenerateTest):
@@ -60,8 +57,6 @@ async def test_generate(req: GenerateTest):
             "code": req.code,
             "file_path": req.file_path,
             "tests": "",
-            "status": "",
-            "output": "",
             "decision": "",
             "reason": "",
             "previous_attempts": [],
@@ -79,8 +74,6 @@ async def test_analyze(req: AnalyzeTest):
             "code": req.code,
             "file_path": req.file_path,
             "tests": req.tests,
-            "status": "",
-            "output": "",
             "decision": "",
             "reason": "",
             "previous_attempts": [],
@@ -101,8 +94,6 @@ async def test_refine(req: RefineTest):
             "code": "",
             "file_path": "",
             "tests": "",
-            "status": "",
-            "output": "",
             "decision": "",
             "reason": "",
             "previous_attempts": [],
@@ -123,24 +114,12 @@ async def generate_spec(req: Generate):
             "code": req.code,
             "file_path": req.file_path,
             "tests": "",
-            "status": "",
-            "output": "",
             "decision": "",
             "reason": "",
             "previous_attempts": [],
         })
 
-        tests = response["tests"]
-
-        os.makedirs(os.path.dirname(req.spec_path), exist_ok=True)
-
-        mode = "a" if os.path.exists(req.spec_path) else "w"
-        with open(req.spec_path, mode) as f:
-            if mode == "a":
-                f.write("\n\n")
-            f.write(tests)
-
-        return {"tests": tests}
+        return {"tests": response["tests"]}
 
     except Exception as e:
         return {"error": str(e)}

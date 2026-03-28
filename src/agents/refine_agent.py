@@ -36,8 +36,6 @@ class RefineAgent:
         code = state.get("code", "")
         file_path = state.get("file_path", "")
         tests = state.get("tests", "")
-        status = state.get("status", "")
-        output = state.get("output", "")
         reason = state.get("reason", "")
         previous_attempts = state.get("previous_attempts", [])
         
@@ -64,11 +62,6 @@ class RefineAgent:
                 Here is the previously generated test file:
 
                 {tests}
-
-                The tests were run and the result was: {status}
-
-                Output:
-                {output}
 
                 The analysis agent found the following issues:
                 {reason}
