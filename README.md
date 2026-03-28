@@ -23,13 +23,13 @@ An AI-powered test generation tool for Python. Point it at any Python file and g
 
 ### CodeLens Button on Functions and Classes
 
-![CodeLens](screenshot-codelens)
-![CodeLens](screenshot-codelens)
-![CodeLens](screenshot-codelens)
+<img width="1280" height="696" alt="1" src="https://github.com/user-attachments/assets/d2478daa-7da7-496d-9b6c-4be4dd4104cf" />
+<img width="1280" height="696" alt="2" src="https://github.com/user-attachments/assets/e7a00c7a-b67b-458c-bfeb-cc5a95ff8312" />
+<img width="1280" height="696" alt="3" src="https://github.com/user-attachments/assets/05a9a06a-4b2c-4976-ac42-3fd628fcca01" />
 
 ### Output Test File
 
-![Test File](screenshot-test-file)
+<img width="1280" height="696" alt="4" src="https://github.com/user-attachments/assets/21c928a8-20b6-4327-b482-ff947738d008" />
 
 ---
 
